@@ -14,6 +14,27 @@ pub fn parse_auto_percentage(value: &str) -> Option<f32> {
     }
 }
 
+// src/utils.rs
+pub fn calculate_square_dimensions(
+    size_str: &str,
+    orig_width: u32,
+    orig_height: u32,
+) -> Result<(u32, u32)> {
+    if let Ok(size) = size_str.parse::<u32>() {
+        // Direct number: apply 2:1 width compensation
+        return Ok((size * 2, size));
+    }
+
+    if let Some(percentage) = parse_auto_percentage(size_str) {
+        // Percentage scaling based on original dimensions
+        let scale = percentage.min(1.0).max(0.01);
+        let base_size = (orig_width.min(orig_height) as f32 * scale).round() as u32;
+        return Ok((base_size * 2, base_size));
+    }
+
+    Err(anyhow!("Invalid auto-square value: {}", size_str))
+}
+
 // Calculate the target dimensions for the ASCII art based on the resolution parameters
 pub fn calculate_dimensions(
     xs_str: &str,
@@ -43,6 +64,7 @@ pub fn calculate_dimensions(
             
             Ok((width, height))
         },
+        
         (xs, ys_str) if xs.starts_with("auto%") => {
             // Only xs has percentage
             let xs_percent = parse_auto_percentage(xs)

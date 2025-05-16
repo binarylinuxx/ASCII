@@ -10,19 +10,19 @@ use converter::AsciiConverter;
 use std::str::FromStr;
 
 fn main() -> Result<()> {
-    let matches = Command::new("ascii")
+    let matches = Command::new("ASCII")
         .version("1.0")
         .about("Convert images to ASCII art")
         .arg(Arg::new("xs")
             .long("xs")
             .value_name("X_RES")
-            .help("Symbol resolution by X (number, 'auto', or 'auto%N' where N is percentage)")
-            .required(true))
+            .help("Symbol resolution by X (number, 'auto', or 'auto%N'). Conflicts with --auto-square")
+            .required_unless_present("auto_square"))
         .arg(Arg::new("ys")
             .long("ys")
             .value_name("Y_RES")
-            .help("Symbol resolution by Y (number, 'auto', or 'auto%N' where N is percentage)")
-            .required(true))
+            .help("Symbol resolution by Y (number, 'auto', or 'auto%N'). Conflicts with --auto-square")
+            .required_unless_present("auto_square"))
         .arg(Arg::new("input")
             .short('i')
             .required(true)
@@ -50,6 +50,12 @@ fn main() -> Result<()> {
             .long("show-instantly")
             .help("Print the ASCII art to console instantly")
             .action(ArgAction::SetTrue))
+        .arg(Arg::new("auto_square")
+            .long("auto-square")
+            .value_name("SIZE")
+            .help("Automatic square resolution (number or auto%N). Conflicts with --xs/--ys")
+            .conflicts_with_all(["xs", "ys"])
+            .required_unless_present("xs"))
         .get_matches();
     
     // Extract command line arguments
@@ -76,13 +82,6 @@ fn main() -> Result<()> {
     let symbols = SymbolPack::from_str(symbols_str)
         .context("Invalid symbol pack")?;
     
-    // Get resolution parameters
-    let xs_str = matches.get_one::<String>("xs")
-        .context("Missing X resolution")?;
-    
-    let ys_str = matches.get_one::<String>("ys")
-        .context("Missing Y resolution")?;
-    
     // Open the image to get original dimensions
     let img = image::open(&input_path)
         .context("Failed to open image")?;
@@ -91,12 +90,24 @@ fn main() -> Result<()> {
     let orig_height = img.height();
     
     // Calculate target dimensions
-    let (target_width, target_height) = utils::calculate_dimensions(
-        xs_str, 
-        ys_str, 
-        orig_width, 
-        orig_height
-    )?;
+    let (target_width, target_height) = if let Some(auto_square) = matches.get_one::<String>("auto_square") {
+        utils::calculate_square_dimensions(
+            auto_square,
+            orig_width,
+            orig_height
+        )?
+    } else {
+        let xs_str = matches.get_one::<String>("xs")
+            .context("Missing X resolution")?;
+        let ys_str = matches.get_one::<String>("ys")
+            .context("Missing Y resolution")?;
+        utils::calculate_dimensions(
+            xs_str,
+            ys_str,
+            orig_width,
+            orig_height
+        )?
+    };
     
     // Create configuration
     let config = Config {
@@ -107,6 +118,7 @@ fn main() -> Result<()> {
         target_width,
         target_height,
         show_instantly,
+        auto_square: matches.get_one::<String>("auto_square").cloned(),
     };
     
     // Create converter and process the image

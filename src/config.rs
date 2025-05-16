@@ -72,6 +72,7 @@ impl FromStr for RenderMode {
 }
 
 // Configuration struct for the ASCII art generator
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct Config {
     pub input_path: String,
@@ -81,4 +82,5 @@ pub struct Config {
     pub target_width: u32,
     pub target_height: u32,
     pub show_instantly: bool,
+    pub auto_square: Option<String>,
 }
