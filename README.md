@@ -15,7 +15,7 @@ $ sudo make install
 ```
 Convert images to ASCII art
 
-Usage: ASCII [OPTIONS] -i <INPUT_IMAGE> -o <OUTPUT_FILE> -m <MODE>
+Usage: ascii-gen [OPTIONS] -i <INPUT_IMAGE> -o <OUTPUT_FILE> -m <MODE>
 
 Options:
       --xs <X_RES>             Symbol resolution by X (number, 'auto', or 'auto%N'). Conflicts with --auto-square
