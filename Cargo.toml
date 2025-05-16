@@ -2,9 +2,13 @@
 name = "ASCII"
 version = "0.1.0"
 edition = "2024"
+authors = ["Your Name <your.email@example.com>"]
+description = "A utility for converting images to ASCII art"
+license = "MIT"
 
 [dependencies]
 image = "0.24"
 clap = { version = "4.4", features = ["derive"] }
 colored = "2.0"
-
+anyhow = "1.0"       # Better error handling
+thiserror = "1.0"    # For custom error types
