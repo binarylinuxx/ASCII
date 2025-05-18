@@ -1,5 +1,5 @@
 BIN=/usr/bin
-NAME=ascii-gen
+NAME=ASCII
 OUT_BIN=target/release/$(NAME)
 
 .PHONY: all check-cargo build install uninstall
